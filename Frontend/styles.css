@@ -1,0 +1,127 @@
+body { 
+    /* ใช้ฟอนต์ของระบบ สวยและไม่ต้องโหลด */
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    padding: 40px 20px; 
+    max-width: 500px; 
+    margin: auto; 
+    background-color: #E0F7FA; /* สีพื้นหลังฟ้าพาสเทลอ่อนๆ */
+    color: #333;
+}
+
+.card { 
+    background: #FFFFFF; 
+    padding: 30px; 
+    border-radius: 20px; /* มุมโค้งมนน่ารักขึ้น */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06); /* เงาฟุ้งๆ นุ่มๆ */
+    margin-bottom: 24px; 
+    border: none; /* เอาขอบแข็งๆ ออก */
+}
+
+h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 24px;
+    color: #2D3436;
+    text-align: center; 
+}
+
+.form-group { 
+    margin-bottom: 18px; 
+}
+
+label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #636E72;
+    margin-bottom: 8px;
+}
+
+/* ช่องกรอกข้อมูล */
+input, select { 
+    font-family: inherit;
+    padding: 14px 16px; 
+    width: 100%; 
+    box-sizing: border-box; 
+    border-radius: 12px; 
+    border: 2px solid #F1F2F6; 
+    background-color: #F8F9FA;
+    font-size: 0.95rem;
+    color: #2D3436;
+    transition: all 0.3s ease; 
+}
+
+/* เวลากดพิมพ์ที่ช่อง ขอบจะเปลี่ยนเป็นสีฟ้าสดใส */
+input:focus, select:focus {
+    outline: none;
+    border-color: #74B9FF; 
+    background-color: #FFF;
+    box-shadow: 0 0 0 4px rgba(116, 185, 255, 0.2);
+}
+
+/* ปุ่มหลัก (จองคิว) - สีฟ้าสดใส */
+button { 
+    font-family: inherit;
+    background-color: #0984E3; 
+    color: white; 
+    border: none; 
+    padding: 16px;
+    border-radius: 12px;
+    cursor: pointer; 
+    font-size: 1rem;
+    font-weight: 600; 
+    width: 100%;
+    margin-top: 10px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(9, 132, 227, 0.3); /* เงาสีฟ้าให้ปุ่มมีมิติ */
+}
+
+/* เอฟเฟกต์ปุ่มเด้งเวลานำเมาส์ไปชี้ */
+button:hover { 
+    background-color: #74B9FF; 
+    transform: translateY(-2px); 
+}
+
+/* ปุ่มรอง (ค้นหา) - สีพีช/ชมพูอมส้ม */
+.btn-search { 
+    background-color: #FF7675; 
+    box-shadow: 0 4px 12px rgba(255, 118, 117, 0.3);
+}
+
+.btn-search:hover { 
+    background-color: #FAB1A0; 
+}
+
+/* ตารางแสดงผล */
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 24px; 
+    font-size: 0.95rem;
+    border-radius: 12px;
+    overflow: hidden; /* ทำให้มุมตารางโค้งตามไปกับกรอบ */
+}
+
+th, td { 
+    padding: 14px 12px; 
+    text-align: left; 
+}
+
+th { 
+    font-weight: 600;
+    background-color: #F1F2F6; /* หัวตารางสีเทาอ่อน สบายตา */
+    color: #2D3436;
+}
+
+tr {
+    border-bottom: 1px solid #F1F2F6;
+}
+
+tr:last-child {
+    border-bottom: none; /* เอาเส้นบรรทัดสุดท้ายออกให้ดูคลีน */
+}
+
+td {
+    color: #636E72;
+}
