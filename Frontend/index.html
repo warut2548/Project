@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จองคิวร้านเสริมสวย</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="card">
+        <h2>🗓️ จองคิวใช้บริการ</h2>
+        <form id="bookingForm">
+            <div class="form-group">
+                <label>ชื่อลูกค้า:</label>
+                <input type="text" id="customer_name" required>
+            </div>
+            <div class="form-group">
+                <label>เบอร์โทรศัพท์ (ใช้สำหรับเช็คสถานะ):</label>
+                <input type="tel" id="phone_number" required>
+            </div>
+            <div class="form-group">
+                <label>บริการที่ต้องการ:</label>
+                <select id="service_id" required>
+                    <option value="1">ตัดผมชาย (300 บาท)</option>
+                    <option value="2">ตัดผมหญิง (500 บาท)</option>
+                    <option value="3">ทำสีผม (1500 บาท)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>วันที่ต้องการนัด:</label>
+                <input type="date" id="appointment_date" required>
+            </div>
+            <div class="form-group">
+                <label>เวลา:</label>
+                <input type="time" id="appointment_time" required>
+            </div>
+            <button type="submit">ยืนยันการจองคิว</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>🔍 เช็คสถานะการจองคิว</h2>
+        <div class="form-group">
+            <input type="tel" id="search_phone" placeholder="กรอกเบอร์โทรศัพท์ของคุณ">
+        </div>
+        <button class="btn-search" onclick="checkStatus()">ค้นหาคิวของฉัน</button>
+        
+        <div id="searchResult"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/appointments';
+
+        // 1. ฟังก์ชันจองคิว
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            const payload = {
+                customer_name: document.getElementById('customer_name').value,
+                phone_number: document.getElementById('phone_number').value,
+                service_id: document.getElementById('service_id').value,
+                appointment_date: document.getElementById('appointment_date').value,
+                appointment_time: document.getElementById('appointment_time').value
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert('🎉 จองคิวสำเร็จแล้ว! คุณสามารถใช้เบอร์โทรศัพท์เช็คสถานะด้านล่างได้เลยครับ');
+                    document.getElementById('bookingForm').reset();
+                } else {
+                    alert('เกิดข้อผิดพลาดในการจองคิว');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // 2. ฟังก์ชันเช็คสถานะด้วยเบอร์โทร
+        async function checkStatus() {
+            const phone = document.getElementById('search_phone').value;
+            if(!phone) {
+                alert('กรุณากรอกเบอร์โทรศัพท์เพื่อค้นหาครับ');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/search/${phone}`);
+                const data = await response.json();
+                const resultDiv = document.getElementById('searchResult');
+                
+                if(data.length === 0) {
+                    resultDiv.innerHTML = '<p style="color:red; margin-top:15px;">❌ ไม่พบข้อมูลการจองสำหรับเบอร์โทรนี้</p>';
+                    return;
+                }
+
+                let html = `
+                    <table style="margin-top:20px;">
+                        <tr>
+                            <th>บริการ</th>
+                            <th>วันที่</th>
+                            <th>เวลา</th>
+                            <th>สถานะ</th>
+                        </tr>
+                `;
+                
+                data.forEach(app => {
+                    let statusText = '';
+                    let statusColor = '';
+                    
+                    if (app.status === 'pending') { statusText = '⏳ รอการยืนยัน'; statusColor = 'orange'; }
+                    else if (app.status === 'confirmed') { statusText = '✅ ยืนยันแล้ว'; statusColor = 'green'; }
+                    else { statusText = '❌ ยกเลิก'; statusColor = 'red'; }
+
+                    html += `<tr>
+                        <td>${app.service_name}</td>
+                        <td>${new Date(app.appointment_date).toLocaleDateString('th-TH')}</td>
+                        <td>${app.appointment_time}</td>
+                        <td style="color:${statusColor}; font-weight:bold;">${statusText}</td>
+                    </tr>`;
+                });
+                
+                html += '</table>';
+                resultDiv.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('ไม่สามารถเชื่อมต่อระบบค้นหาได้');
+            }
+        }
+    </script>
+</body>
+</html>
