@@ -1,0 +1,45 @@
+cd คำสั่งให้เข้าไปในไฟล์
+
+// Show all containers (default shows just running)
+docker ps --all
+
+// Show just running containers
+docker ps
+
+docker run hello-world
+
+//stop containers
+docker stop <container_id>
+
+//pull an image from a registry
+docker pull <image_name>
+
+//create a container from an image
+docker create <image_name>
+
+//start a container
+docker start <container_id>
+
+//remove a container
+docker rm <container_id>
+
+//remove all containers ***ต้องระวังมันลบ server ทุกอย่าง***
+docker system prune
+
+//nginx server
+docker run nginx
+
+// sh container
+docker run -it <image_name or container_id> sh
+
+// cat file inside container
+cat filename.txt
+
+docker run -p 80:80 nginx
+
+foreground mode
+docker run -p 9000:80 nginx
+
+//detached mode
+docker run -d -p 9100:80 nginx
+
