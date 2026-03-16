@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เช็คสถานะการจองคิว</title>
+    <link rel="stylesheet" href="styles.css"> 
+    <style>
+        /* แถม CSS สำหรับจัดการสีสถานะให้สวยขึ้นครับ */
+        .status-pending { color: #f39c12; font-weight: bold; }
+        .status-confirmed { color: #27ae60; font-weight: bold; }
+        .status-cancelled { color: #e74c3c; font-weight: bold; }
+        .result-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 5px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2 style="text-align: center; color: #2d3436;">🔍 เช็คสถานะการจองคิว</h2>
+        
+        <div class="form-group">
+            <label>เบอร์โทรศัพท์ที่ใช้จอง:</label>
+            <input type="tel" id="phoneInput" placeholder="ตัวอย่าง: 0812345678" required>
+        </div>
+        
+        <button class="btn-search" onclick="searchAppointments()">ค้นหาข้อมูล</button>
+
+        <div id="resultArea"></div>
+        
+        <a href="index2.html" style="display:block; text-align:center; margin-top:20px; text-decoration:none; color:#636e72;">
+            🔙 กลับไปหน้าจองคิว
+        </a>
+    </div>
+
+    <script>
+        async function searchAppointments() {
+            const phone = document.getElementById('phoneInput').value;
+            const resultArea = document.getElementById('resultArea');
+            
+            if (!phone) {
+                alert('กรุณากรอกเบอร์โทรศัพท์ก่อนค้นหาครับ');
+                return;
+            }
+
+            resultArea.innerHTML = '<p style="text-align:center; margin-top:20px; color:#666;">⏳ กำลังค้นหาข้อมูล...</p>';
+
+            try {
+                const res = await fetch(`http://localhost:5000/appointments/search/${phone}`);
+                const data = await res.json();
+                
+                if (data.length === 0) {
+                    resultArea.innerHTML = '<p style="color:red; text-align:center; margin-top:20px;">❌ ไม่พบข้อมูลการจองของเบอร์นี้ในระบบ</p>';
+                } else {
+                    let html = '';
+                    data.forEach(app => {
+                        let statusText = '';
+                        let statusClass = '';
+
+                        // ใช้ .toLowerCase() เพื่อให้เช็คได้แม่นยำ ไม่ว่าจะบันทึกมาเป็นตัวเล็กหรือใหญ่
+                        const currentStatus = app.status ? app.status.toLowerCase() : '';
+
+                        if(currentStatus === 'pending') { 
+                            statusText = '⏳ รอการยืนยัน'; 
+                            statusClass = 'status-pending'; 
+                        }
+                        else if(currentStatus === 'confirmed') { 
+                            statusText = '✅ ยืนยันแล้ว'; 
+                            statusClass = 'status-confirmed'; 
+                        }
+                        else if(currentStatus === 'cancelled') { 
+                            statusText = '❌ ยกเลิก'; 
+                            statusClass = 'status-cancelled'; 
+                        }
+                        else { 
+                            statusText = app.status || 'ไม่ระบุ'; 
+                            statusClass = ''; 
+                        }
+
+                        html += `
+                        <div class="result-card">
+                            <p><strong>ชื่อลูกค้า:</strong> ${app.customer_name}</p>
+                            <p><strong>บริการ:</strong> ${app.service_name}</p>
+                            <p><strong>วันที่นัด:</strong> ${new Date(app.appointment_date).toLocaleDateString('th-TH')}</p>
+                            <p><strong>เวลา:</strong> ${app.appointment_time} น.</p>
+                            <p><strong>สถานะ:</strong> <span class="${statusClass}">${statusText}</span></p>
+                        </div>
+                        `;
+                    });
+                    resultArea.innerHTML = html;
+                }
+            } catch (err) {
+                console.error(err);
+                resultArea.innerHTML = '<p style="color:red; text-align:center; margin-top:20px;">⚠️ ไม่สามารถเชื่อมต่อระบบค้นหาได้</p>';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,127 +1,244 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+/* =========================================
+   สไตล์พื้นหลัง (ธีม Caramel Brown สไตล์รูปภาพ)
+   ========================================= */
 body { 
-    /* ใช้ฟอนต์ของระบบ สวยและไม่ต้องโหลด */
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    font-family: 'Kanit', sans-serif; 
+    /* พื้นหลังไล่สีโทนน้ำตาลคาราเมล อบอุ่นและดูพรีเมียม */
+    background: linear-gradient(135deg, #9F7250 0%, #835A3D 50%, #A87B5D 100%);
+    background-size: 200% 200%;
+    animation: gradientMove 15s ease infinite; 
+    color: #31231E; /* เปลี่ยนสีตัวอักษรเป็นช็อกโกแลตเข้ม */
     padding: 40px 20px; 
-    max-width: 500px; 
-    margin: auto; 
-    background-color: #E0F7FA; /* สีพื้นหลังฟ้าพาสเทลอ่อนๆ */
-    color: #333;
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    box-sizing: border-box;
 }
 
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* =========================================
+   กล่องการ์ด (สไตล์ Glassmorphism โทนเบจพีช)
+   ========================================= */
 .card { 
-    background: #FFFFFF; 
-    padding: 30px; 
-    border-radius: 20px; /* มุมโค้งมนน่ารักขึ้น */
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06); /* เงาฟุ้งๆ นุ่มๆ */
+    /* กระจกสีเบจ/พีชโปร่งแสง ดึงสีจากพื้นหลังแอปในรูป */
+    background: rgba(248, 213, 165, 0.85); 
+    backdrop-filter: blur(15px); 
+    -webkit-backdrop-filter: blur(15px);
+    padding: 40px 35px; 
+    border-radius: 20px; 
+    box-shadow: 0 20px 40px rgba(49, 35, 30, 0.3), 
+                inset 0 0 0 1px rgba(255, 255, 255, 0.4); 
+    width: 100%; 
+    max-width: 550px; 
     margin-bottom: 24px; 
-    border: none; /* เอาขอบแข็งๆ ออก */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
 }
 
+/* =========================================
+   หัวข้อ (Dark Chocolate Gradient Text)
+   ========================================= */
 h2 {
-    font-size: 1.4rem;
-    font-weight: 600;
+    font-size: 1.8rem;
+    font-weight: 700;
     margin-top: 0;
-    margin-bottom: 24px;
-    color: #2D3436;
+    margin-bottom: 30px;
     text-align: center; 
+    /* ไล่สีน้ำตาลช็อกโกแลต */
+    background: linear-gradient(45deg, #5C4335, #31231E, #5C4335);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 2px 2px 10px rgba(49, 35, 30, 0.1);
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
+/* =========================================
+   ฟอร์มและช่องกรอกข้อมูล
+   ========================================= */
 .form-group { 
-    margin-bottom: 18px; 
+    margin-bottom: 22px; 
 }
 
 label {
     display: block;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #636E72;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #5C4335; 
     margin-bottom: 8px;
+    margin-left: 5px;
+    letter-spacing: 0.5px;
 }
 
-/* ช่องกรอกข้อมูล */
 input, select { 
     font-family: inherit;
-    padding: 14px 16px; 
+    padding: 15px 18px; 
     width: 100%; 
     box-sizing: border-box; 
     border-radius: 12px; 
-    border: 2px solid #F1F2F6; 
-    background-color: #F8F9FA;
-    font-size: 0.95rem;
-    color: #2D3436;
-    transition: all 0.3s ease; 
+    border: 1px solid #D1A787; 
+    background-color: rgba(255, 255, 255, 0.6); /* ช่องกรอกสีขาวโปร่งแสง */
+    font-size: 1rem;
+    color: #31231E;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
 }
 
-/* เวลากดพิมพ์ที่ช่อง ขอบจะเปลี่ยนเป็นสีฟ้าสดใส */
+/* เวลากดพิมพ์ ขอบจะเปลี่ยนเป็นสีช็อกโกแลต */
 input:focus, select:focus {
     outline: none;
-    border-color: #74B9FF; 
-    background-color: #FFF;
-    box-shadow: 0 0 0 4px rgba(116, 185, 255, 0.2);
+    border-color: #31231E; 
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 0 4px rgba(49, 35, 30, 0.1);
+    transform: translateY(-2px); 
 }
 
-/* ปุ่มหลัก (จองคิว) - สีฟ้าสดใส */
+::placeholder {
+    color: #9C7A63;
+}
+
+/* =========================================
+   ปุ่มกด
+   ========================================= */
 button { 
     font-family: inherit;
-    background-color: #0984E3; 
-    color: white; 
+    /* ปุ่มจองคิว: สีช็อกโกแลตเข้ม */
+    background: linear-gradient(135deg, #4A352D 0%, #31231E 100%);
+    color: #F8D5A5; /* ตัวหนังสือสีเบจ */
     border: none; 
     padding: 16px;
     border-radius: 12px;
     cursor: pointer; 
-    font-size: 1rem;
-    font-weight: 600; 
+    font-size: 1.1rem;
+    font-weight: 700; 
     width: 100%;
-    margin-top: 10px;
-    transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(9, 132, 227, 0.3); /* เงาสีฟ้าให้ปุ่มมีมิติ */
+    margin-top: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(49, 35, 30, 0.3);
+    letter-spacing: 1px;
 }
 
-/* เอฟเฟกต์ปุ่มเด้งเวลานำเมาส์ไปชี้ */
 button:hover { 
-    background-color: #74B9FF; 
-    transform: translateY(-2px); 
+    background: linear-gradient(135deg, #5C4335 0%, #4A352D 100%);
+    transform: translateY(-3px) scale(1.02); 
+    box-shadow: 0 10px 25px rgba(49, 35, 30, 0.4);
 }
 
-/* ปุ่มรอง (ค้นหา) - สีพีช/ชมพูอมส้ม */
+button:active {
+    transform: translateY(1px); 
+}
+
+/* ปุ่มรอง (ค้นหา): ใช้สีน้ำตาลอ่อน (Mid Brown) */
 .btn-search { 
-    background-color: #FF7675; 
-    box-shadow: 0 4px 12px rgba(255, 118, 117, 0.3);
+    background: linear-gradient(135deg, #C49A7C 0%, #AE7E58 100%);
+    color: #31231E;
+    box-shadow: 0 6px 20px rgba(174, 126, 88, 0.3);
 }
 
 .btn-search:hover { 
-    background-color: #FAB1A0; 
+    background: linear-gradient(135deg, #D1A787 0%, #C49A7C 100%);
+    box-shadow: 0 10px 25px rgba(174, 126, 88, 0.4);
 }
 
-/* ตารางแสดงผล */
+/* =========================================
+   ส่วนแสดงผลลัพธ์ (คงลาย Barber Pole ไว้)
+   ========================================= */
+.result-card { 
+    margin-top: 25px; 
+    padding: 20px 25px; 
+    border-radius: 12px; 
+    background: rgba(255, 255, 255, 0.7); 
+    border-left: 8px solid transparent; 
+    border-image: repeating-linear-gradient(
+        -45deg,
+        #D31027,
+        #D31027 10px,
+        #ffffff 10px,
+        #ffffff 20px,
+        #0052A5 20px,
+        #0052A5 30px,
+        #ffffff 30px,
+        #ffffff 40px
+    ) 1;
+    text-align: left;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+}
+
+.result-card:hover {
+    transform: translateX(5px); 
+}
+
+.result-card p { 
+    margin: 10px 0; 
+    font-size: 1rem; 
+    color: #31231E; 
+    font-weight: 500;
+}
+
+/* ป้ายสถานะ (ปรับให้เข้ากับพื้นหลังสว่าง) */
+.status-pending { background-color: rgba(243, 156, 18, 0.15); color: #D68910; border: 1px solid rgba(243, 156, 18, 0.4); padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.85rem;} 
+.status-confirmed { background-color: rgba(46, 204, 113, 0.15); color: #27AE60; border: 1px solid rgba(46, 204, 113, 0.4); padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.85rem;} 
+.status-cancelled { background-color: rgba(231, 76, 60, 0.15); color: #C0392B; border: 1px solid rgba(231, 76, 60, 0.4); padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.85rem;} 
+
+/* =========================================
+   ตารางแสดงผล (หน้าแอดมิน)
+   ========================================= */
 table { 
     width: 100%; 
-    border-collapse: collapse; 
-    margin-top: 24px; 
-    font-size: 0.95rem;
+    border-collapse: separate; 
+    border-spacing: 0;
+    margin-top: 30px; 
+    font-size: 1rem;
     border-radius: 12px;
-    overflow: hidden; /* ทำให้มุมตารางโค้งตามไปกับกรอบ */
+    overflow: hidden; 
+    box-shadow: 0 4px 15px rgba(49, 35, 30, 0.15);
 }
 
 th, td { 
-    padding: 14px 12px; 
+    padding: 18px 15px; 
     text-align: left; 
 }
 
 th { 
     font-weight: 600;
-    background-color: #F1F2F6; /* หัวตารางสีเทาอ่อน สบายตา */
-    color: #2D3436;
+    background: rgba(49, 35, 30, 0.95); /* สีช็อกโกแลต */
+    color: #F8D5A5; /* สีเบจ */
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
 }
 
 tr {
-    border-bottom: 1px solid #F1F2F6;
+    background-color: rgba(255, 255, 255, 0.6);
+    transition: all 0.2s ease;
 }
 
-tr:last-child {
-    border-bottom: none; /* เอาเส้นบรรทัดสุดท้ายออกให้ดูคลีน */
+tr:hover {
+    background-color: rgba(255, 255, 255, 0.9); 
+    transform: scale(1.01); 
 }
 
 td {
-    color: #636E72;
+    color: #4A352D;
+    border-bottom: 1px solid rgba(174, 126, 88, 0.3);
+}
+
+a {
+    color: #8E6545;
+    transition: color 0.3s ease;
+    font-weight: 500;
+}
+a:hover {
+    color: #31231E !important;
+    text-shadow: 0 0 8px rgba(49, 35, 30, 0.2);
 }

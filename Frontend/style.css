@@ -1,0 +1,14 @@
+body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f4f7f6; }
+.card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: left; }
+th { background-color: #f8f9fa; color: #555; }
+
+/* แยกสีสถานะ */
+.status-pending { background-color: #fff9db; } /* สีเหลืองอ่อน (รอ) */
+.status-confirmed { background-color: #e6fffa; } /* สีเขียวอ่อน (ยืนยัน) */
+.status-cancelled { background-color: #fff5f5; } /* สีแดงอ่อน (ยกเลิก) */
+
+.btn-edit { background: #6c5ce7; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
+.btn-save { background: #27ae60; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
+[contenteditable="true"] { background: white; border: 1px solid #74b9ff; padding: 4px; }

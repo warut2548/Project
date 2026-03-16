@@ -2,88 +2,19 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบหลังบ้าน - จัดการคิว</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 900px; margin: auto; background-color: #eef2f3; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #2c3e50; color: white; }
-        .status-select { padding: 6px; width: auto; font-size: 14px; cursor: pointer; border-radius: 4px; }
-        h2 { color: #2c3e50; }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <title>ระบบจัดการคิว</title>
 </head>
 <body>
-
     <div class="card">
-        <h2>🛠️ ระบบจัดการคิว (สำหรับแอดมิน)</h2>
+        <h2>🛠️ ระบบจัดการคิว (แอดมิน)</h2>
         <table>
             <thead>
-                <tr>
-                    <th>ชื่อลูกค้า</th>
-                    <th>เบอร์โทร</th>
-                    <th>บริการ</th>
-                    <th>วันที่</th>
-                    <th>เวลา</th>
-                    <th>จัดการสถานะ</th>
-                </tr>
+                <tr><th>ชื่อ</th><th>เบอร์โทร</th><th>บริการ</th><th>วันที่</th><th>เวลา</th><th>จัดการ</th></tr>
             </thead>
-            <tbody id="tableBody">
-                </tbody>
+            <tbody id="tableBody"></tbody>
         </table>
     </div>
-
-    <script>
-        const API_URL = 'http://localhost:5000/appointments';
-
-        async function fetchAppointments() {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                const tableBody = document.getElementById('tableBody');
-                tableBody.innerHTML = ''; 
-                
-                data.forEach(app => {
-                    const row = `<tr>
-                        <td>${app.customer_name}</td>
-                        <td>${app.phone_number}</td>
-                        <td>${app.service_name}</td>
-                        <td>${app.appointment_date.split('T')[0]}</td>
-                        <td>${app.appointment_time}</td>
-                        <td>
-                            <select class="status-select" onchange="changeStatus(${app.id}, this.value)">
-                                <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>⏳ รอการยืนยัน</option>
-                                <option value="confirmed" ${app.status === 'confirmed' ? 'selected' : ''}>✅ ยืนยันแล้ว</option>
-                                <option value="cancelled" ${app.status === 'cancelled' ? 'selected' : ''}>❌ ยกเลิก</option>
-                            </select>
-                        </td>
-                    </tr>`;
-                    tableBody.innerHTML += row;
-                });
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        }
-
-        async function changeStatus(id, newStatus) {
-            try {
-                const response = await fetch(`${API_URL}/${id}/status`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: newStatus })
-                });
-                
-                if (!response.ok) {
-                    alert('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
-                    fetchAppointments(); 
-                }
-            } catch (error) {
-                console.error('Error changing status:', error);
-            }
-        }
-
-        fetchAppointments(); 
-    </script>
+    <script src="admin.js"></script>
 </body>
 </html>
