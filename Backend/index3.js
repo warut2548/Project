@@ -7,6 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// --- ตั้งค่าการเชื่อมต่อฐานข้อมูล ---
 const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
@@ -73,6 +74,34 @@ app.post('/appointments', async (req, res) => {
     }
 });
 
+// --- ✨ [User] ยกเลิกคิวของตัวเอง ✨ ---
+app.put('/appointments/:id/cancel', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query("UPDATE appointments SET status = 'Cancelled' WHERE id = ?", [id]);
+        res.json({ message: 'ยกเลิกคิวสำเร็จ' });
+    } catch (err) { 
+        console.error("❌ Cancel Error:", err);
+        res.status(500).json({ error: 'ล้มเหลวในการยกเลิกคิว' }); 
+    }
+});
+
+// --- ✨ [User] เลื่อนคิว (แก้ไขวันและเวลา) ✨ ---
+app.put('/appointments/:id/reschedule', async (req, res) => {
+    const { id } = req.params;
+    const { appointment_date, appointment_time } = req.body;
+    try {
+        await pool.query(
+            "UPDATE appointments SET appointment_date = ?, appointment_time = ? WHERE id = ?", 
+            [appointment_date, appointment_time, id]
+        );
+        res.json({ message: 'เลื่อนคิวสำเร็จ' });
+    } catch (err) { 
+        console.error("❌ Reschedule Error:", err);
+        res.status(500).json({ error: 'ล้มเหลวในการเลื่อนคิว' }); 
+    }
+});
+
 // --- [User] อัปเดตชื่อโปรไฟล์ ---
 app.put('/users/:id', async (req, res) => {
     const { id } = req.params;
@@ -101,5 +130,6 @@ app.post('/login', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'ขัดข้อง' }); }
 });
 
+// --- เริ่มการทำงานของ Server ---
 const port = 5000;
 app.listen(port, () => console.log(`🚀 Server running on http://localhost:${port}`));
