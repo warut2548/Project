@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ | Barber Shop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            /* 🌟 เพิ่มรูปพื้นหลังสุดเท่ตรงนี้ */
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1920');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .login-container { 
+            background: rgba(255, 255, 255, 0.95); /* ทำให้กล่องใสขึ้นนิดๆ */
+            padding: 40px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+            width: 100%; 
+            max-width: 400px; 
+            text-align: center; 
+        }
+        /* 🌟 โค้ดสำหรับรูปโลโก้กลมๆ */
+        .login-logo {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 3px solid #0b4e3d;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .login-container h2 { margin-top: 0; margin-bottom: 5px; color: #0b4e3d; font-weight: 600; }
+        .login-container p { color: #555; margin-bottom: 20px; }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            box-sizing: border-box; 
+            font-family: 'Kanit', sans-serif;
+            font-size: 15px;
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background: #0b4e3d; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 600;
+            font-family: 'Kanit', sans-serif; 
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+        button:hover { background: #083b2e; transform: translateY(-2px); }
+        .register-link {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .register-link a {
+            color: #0b4e3d;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=200" alt="Barber Logo" class="login-logo">
+        
+        <h2>BARBER SHOP</h2>
+        <p>เข้าสู่ระบบเพื่อจองคิว</p>
+        
+        <input type="email" id="email" placeholder="📧 อีเมลของคุณ" required>
+        <input type="password" id="password" placeholder="🔒 รหัสผ่าน" required>
+        
+        <button onclick="login()">เข้าสู่ระบบ</button>
+        
+        <div class="register-link">
+            <p>ยังไม่มีบัญชี? <a href="register.html">สมัครสมาชิกที่นี่</a></p>
+        </div>
+    </div>
+
+    <script>
+        // เคลียร์ข้อมูลเก่าทิ้งก่อน (ป้องกัน user เก่าค้างในระบบ)
+        localStorage.clear();
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                alert("กรุณากรอกอีเมลและรหัสผ่านให้ครบถ้วนครับ");
+                return;
+            }
+
+            try {
+                // ส่งข้อมูลไปตรวจสอบที่ Backend
+                const res = await axios.post('http://localhost:5000/login', { email, password });
+                alert('เข้าสู่ระบบสำเร็จ! 🎉');
+                
+                // บันทึกข้อมูลลูกค้าลงในระบบ
+                localStorage.setItem('userId', res.data.user.id);
+                localStorage.setItem('userName', res.data.user.full_name);
+                
+                // ล็อกอินผ่านแล้วเด้งไปหน้าเลือกบริการ
+                window.location.href = 'services.html';
+            } catch (err) {
+                alert('อีเมลหรือรหัสผ่านผิดครับ! โปรดลองใหม่อีกครั้ง');
+            }
+        }
+    </script>
+</body>
+</html>

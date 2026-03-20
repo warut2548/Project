@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จองวันเวลา | Barber Shop</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        .booking-box { background: white; padding: 30px; border-radius: 10px; margin: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input[type="date"], input[type="time"] { width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #ccc; font-family: 'Kanit', sans-serif;}
+        .btn-confirm { background: #0b4e3d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; font-family: 'Kanit', sans-serif; width: 100%;}
+    </style>
+</head>
+<body class="dashboard-body">
+    <div class="sidebar">
+        <div class="sidebar-header"><h3>BARBER SHOP</h3></div>
+        <nav class="sidebar-nav">
+            <a href="services.html" class="nav-item">✂️ เลือกบริการ</a>
+            <a href="check.html" class="nav-item">🔍 เช็คสถานะคิว</a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div class="booking-box">
+            <h2>📅 เลือกวันและเวลา</h2>
+            <p>บริการที่เลือก: <strong id="serviceNameDisplay">...</strong></p>
+            
+            <label>วันที่ต้องการจอง:</label>
+            <input type="date" id="bookDate">
+            
+            <label>เวลาที่ต้องการจอง:</label>
+            <input type="time" id="bookTime">
+
+            <button class="btn-confirm" onclick="confirmBooking()">ยืนยันการจองคิว</button>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const serviceName = localStorage.getItem('selectedServiceName');
+            if(!serviceName) window.location.href = 'services.html';
+            document.getElementById('serviceNameDisplay').innerText = serviceName;
+        });
+
+        async function confirmBooking() {
+            const userId = localStorage.getItem('userId');
+            const serviceId = localStorage.getItem('selectedServiceId');
+            const date = document.getElementById('bookDate').value;
+            const time = document.getElementById('bookTime').value;
+
+            if (!date || !time) {
+                alert("กรุณาเลือกวันและเวลาให้ครบถ้วนครับ");
+                return;
+            }
+
+            try {
+                await axios.post('http://localhost:5000/appointments', {
+                    user_id: userId,
+                    service_id: serviceId,
+                    appointment_date: date,
+                    appointment_time: time
+                });
+                alert('จองคิวสำเร็จแล้วครับ! 🎉');
+                window.location.href = 'check.html';
+            } catch (error) {
+                alert(error.response?.data?.error || 'เกิดข้อผิดพลาดในการจองคิว');
+            }
+        }
+    </script>
+</body>
+</html>

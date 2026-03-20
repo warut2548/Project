@@ -3,102 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เช็คสถานะการจองคิว</title>
-    <link rel="stylesheet" href="styles.css"> 
+    <title>ประวัติการจอง | Barber Shop</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        /* แถม CSS สำหรับจัดการสีสถานะให้สวยขึ้นครับ */
-        .status-pending { color: #f39c12; font-weight: bold; }
-        .status-confirmed { color: #27ae60; font-weight: bold; }
-        .status-cancelled { color: #e74c3c; font-weight: bold; }
-        .result-card {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border-left: 5px solid #ddd;
-        }
+        .appointment-card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .status-Pending { color: #f39c12; font-weight: bold; }
+        .status-Confirmed { color: #2ecc71; font-weight: bold; }
+        .status-Cancelled { color: #e74c3c; font-weight: bold; }
+        .error-msg { color: #e74c3c; font-weight: bold; background: #fadbd8; padding: 10px; border-radius: 5px; border: 1px solid #e74c3c; }
     </style>
 </head>
-<body>
-
-    <div class="card">
-        <h2 style="text-align: center; color: #2d3436;">🔍 เช็คสถานะการจองคิว</h2>
-        
-        <div class="form-group">
-            <label>เบอร์โทรศัพท์ที่ใช้จอง:</label>
-            <input type="tel" id="phoneInput" placeholder="ตัวอย่าง: 0812345678" required>
+<body class="dashboard-body">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>BARBER SHOP</h3>
         </div>
-        
-        <button class="btn-search" onclick="searchAppointments()">ค้นหาข้อมูล</button>
-
-        <div id="resultArea"></div>
-        
-        <a href="index2.html" style="display:block; text-align:center; margin-top:20px; text-decoration:none; color:#636e72;">
-            🔙 กลับไปหน้าจองคิว
-        </a>
+        <nav class="sidebar-nav">
+            <a href="services.html" class="nav-item">✂️ เลือกบริการ</a>
+            <a href="check.html" class="nav-item active">🔍 เช็คสถานะคิว</a>
+            <a href="#" class="nav-item logout" onclick="logout()">🚪 ออกจากระบบ</a>
+        </nav>
     </div>
 
+    <main class="main-content">
+        <div style="display: flex; justify-content: flex-end; padding: 15px 20px 0; width: 100%; box-sizing: border-box;">
+            <div onclick="editName()" style="cursor: pointer; display: flex; align-items: center; background-color: #0b4e3d; color: white; padding: 8px 20px; border-radius: 30px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s;" onmouseover="this.style.backgroundColor='#083b2e'" onmouseout="this.style.backgroundColor='#0b4e3d'">
+                <span style="margin-right: 10px; font-size: 1.2rem;">👤</span>
+                <span id="topbarUserName">กำลังโหลด...</span>
+                <span style="margin-left: 10px; font-size: 0.8rem; opacity: 0.8;">✏️ แก้ไข</span>
+            </div>
+        </div>
+
+        <div style="padding: 20px;">
+            <h2>📋 รายการจองคิวของคุณ</h2>
+            <div id="appointmentList"><p>กำลังโหลดข้อมูล...</p></div>
+        </div>
+    </main>
+
     <script>
-        async function searchAppointments() {
-            const phone = document.getElementById('phoneInput').value;
-            const resultArea = document.getElementById('resultArea');
+        // 1. เช็คสิทธิ์การเข้าถึง (ดักไว้ก่อนเลยว่าล็อกอินมาหรือยัง)
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            window.location.href = 'login.html';
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const userName = localStorage.getItem('userName') || 'ลูกค้า';
+            document.getElementById('topbarUserName').innerText = userName;
             
-            if (!phone) {
-                alert('กรุณากรอกเบอร์โทรศัพท์ก่อนค้นหาครับ');
-                return;
+            // 2. ถ้ามี userId ค่อยไปดึงข้อมูล
+            if (userId) {
+                fetchAppointments();
             }
+        });
 
-            resultArea.innerHTML = '<p style="text-align:center; margin-top:20px; color:#666;">⏳ กำลังค้นหาข้อมูล...</p>';
-
-            try {
-                const res = await fetch(`http://localhost:5000/appointments/search/${phone}`);
-                const data = await res.json();
-                
-                if (data.length === 0) {
-                    resultArea.innerHTML = '<p style="color:red; text-align:center; margin-top:20px;">❌ ไม่พบข้อมูลการจองของเบอร์นี้ในระบบ</p>';
-                } else {
-                    let html = '';
-                    data.forEach(app => {
-                        let statusText = '';
-                        let statusClass = '';
-
-                        // ใช้ .toLowerCase() เพื่อให้เช็คได้แม่นยำ ไม่ว่าจะบันทึกมาเป็นตัวเล็กหรือใหญ่
-                        const currentStatus = app.status ? app.status.toLowerCase() : '';
-
-                        if(currentStatus === 'pending') { 
-                            statusText = '⏳ รอการยืนยัน'; 
-                            statusClass = 'status-pending'; 
-                        }
-                        else if(currentStatus === 'confirmed') { 
-                            statusText = '✅ ยืนยันแล้ว'; 
-                            statusClass = 'status-confirmed'; 
-                        }
-                        else if(currentStatus === 'cancelled') { 
-                            statusText = '❌ ยกเลิก'; 
-                            statusClass = 'status-cancelled'; 
-                        }
-                        else { 
-                            statusText = app.status || 'ไม่ระบุ'; 
-                            statusClass = ''; 
-                        }
-
-                        html += `
-                        <div class="result-card">
-                            <p><strong>ชื่อลูกค้า:</strong> ${app.customer_name}</p>
-                            <p><strong>บริการ:</strong> ${app.service_name}</p>
-                            <p><strong>วันที่นัด:</strong> ${new Date(app.appointment_date).toLocaleDateString('th-TH')}</p>
-                            <p><strong>เวลา:</strong> ${app.appointment_time} น.</p>
-                            <p><strong>สถานะ:</strong> <span class="${statusClass}">${statusText}</span></p>
-                        </div>
-                        `;
-                    });
-                    resultArea.innerHTML = html;
+        async function editName() {
+            const currentName = document.getElementById('topbarUserName').innerText;
+            const newName = prompt("กรุณากรอกชื่อใหม่ของคุณ:", currentName);
+            if (newName && newName.trim() !== "" && newName !== currentName) {
+                try {
+                    await axios.put(`http://localhost:5000/users/${userId}`, { full_name: newName });
+                    localStorage.setItem('userName', newName); 
+                    document.getElementById('topbarUserName').innerText = newName;
+                    alert("อัปเดตชื่อเรียบร้อยแล้วครับ! 🎉");
+                } catch (error) {
+                    console.error("❌ Edit Name Error:", error);
+                    alert("เกิดข้อผิดพลาด ไม่สามารถอัปเดตชื่อได้ครับ เช็ค Console (F12) เพื่อดูรายละเอียด");
                 }
-            } catch (err) {
-                console.error(err);
-                resultArea.innerHTML = '<p style="color:red; text-align:center; margin-top:20px;">⚠️ ไม่สามารถเชื่อมต่อระบบค้นหาได้</p>';
             }
+        }
+
+        async function fetchAppointments() {
+            try {
+                // ขึ้นสถานะโหลดก่อนเผื่อเน็ตช้า
+                const listDiv = document.getElementById('appointmentList');
+                listDiv.innerHTML = '<p>กำลังโหลดข้อมูล...</p>';
+
+                const res = await axios.get(`http://localhost:5000/appointments/${userId}`);
+                const appointments = res.data;
+                
+                if (!appointments || appointments.length === 0) {
+                    listDiv.innerHTML = '<p>คุณยังไม่มีประวัติการจองคิวครับ</p>';
+                    return;
+                }
+
+                listDiv.innerHTML = appointments.map(app => `
+                    <div class="appointment-card">
+                        <h3 style="margin-top:0;">บริการ: ${app.service_name || 'ไม่ระบุ (อาจถูกลบออกไปแล้ว)'}</h3>
+                        <p><strong>วันที่:</strong> ${new Date(app.appointment_date).toLocaleDateString('th-TH')}</p>
+                        <p><strong>เวลา:</strong> ${app.appointment_time}</p>
+                        <p><strong>สถานะ:</strong> <span class="status-${app.status}">${app.status}</span></p>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                // 3. ปรับปรุงการแจ้ง Error ให้ชัดเจนขึ้น + log ลง console
+                console.error("❌ Fetch Appointments Error:", error);
+                document.getElementById('appointmentList').innerHTML = `
+                    <div class="error-msg">
+                        เกิดข้อผิดพลาดในการโหลดข้อมูล (ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้)<br>
+                        <small>กรุณากด F12 แล้วดูที่แท็บ Console ว่าแจ้งเตือนสีแดงว่าอะไร</small>
+                    </div>
+                `;
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
         }
     </script>
 </body>

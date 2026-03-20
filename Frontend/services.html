@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เลือกบริการ | Barber Shop</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="dashboard-body">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>BARBER SHOP</h3>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="services.html" class="nav-item active">✂️ เลือกบริการ</a>
+            <a href="check.html" class="nav-item">🔍 เช็คสถานะคิว</a>
+            <a href="#" class="nav-item logout" onclick="logout()">🚪 ออกจากระบบ</a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div style="display: flex; justify-content: flex-end; padding: 15px 20px 0; width: 100%; box-sizing: border-box;">
+            <div onclick="editName()" style="cursor: pointer; display: flex; align-items: center; background-color: #0b4e3d; color: white; padding: 8px 20px; border-radius: 30px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s;" onmouseover="this.style.backgroundColor='#083b2e'" onmouseout="this.style.backgroundColor='#0b4e3d'">
+                <span style="margin-right: 10px; font-size: 1.2rem;">👤</span>
+                <span id="topbarUserName">กำลังโหลด...</span>
+                <span style="margin-left: 10px; font-size: 0.8rem; opacity: 0.8;">✏️ แก้ไข</span>
+            </div>
+        </div>
+
+        <header class="content-header">
+            <div class="user-welcome">
+                <h2>สวัสดีคุณ <span id="userNameDisplay">...</span></h2>
+                <p>วันนี้อยากรับบริการอะไรดีครับ?</p>
+            </div>
+        </header>
+
+        <div class="services-grid">
+            <div class="service-card-modern" onclick="selectService(1, 'ตัดผมชาย (Modern Haircut)', 300)">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=500');"></div>
+                <div class="card-info">
+                    <h3>ตัดผมชาย</h3>
+                    <p class="desc">ออกแบบทรงผมให้เข้ากับใบหน้า</p>
+                    <div class="card-footer">
+                        <span class="price">300 ฿</span>
+                        <button class="btn-select">เลือก</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-card-modern" onclick="selectService(2, 'โกนหนวดแต่งเครา', 150)">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=500');"></div>
+                <div class="card-info">
+                    <h3>โกนหนวดแต่งเครา</h3>
+                    <p class="desc">โกนหนวดสไตล์คลาสสิกด้วยผ้าขนหนูร้อน</p>
+                    <div class="card-footer">
+                        <span class="price">150 ฿</span>
+                        <button class="btn-select">เลือก</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-card-modern" onclick="selectService(3, 'แพ็คเกจจัดเต็ม (ตัด+โกน)', 400)">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=500');"></div>
+                <div class="card-info">
+                    <h3>แพ็คเกจจัดเต็ม</h3>
+                    <p class="desc">ตัดผมและโกนหนวดแบบครบสูตร</p>
+                    <div class="card-footer">
+                        <span class="price">400 ฿</span>
+                        <button class="btn-select">เลือก</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        window.onload = () => {
+            const userName = localStorage.getItem('userName') || 'ลูกค้า';
+            const userId = localStorage.getItem('userId');
+            
+            if (!userId) {
+                window.location.href = 'login.html'; 
+                return;
+            }
+            document.getElementById('userNameDisplay').innerText = userName;
+            document.getElementById('topbarUserName').innerText = userName;
+        };
+
+        async function editName() {
+            const currentName = document.getElementById('topbarUserName').innerText;
+            const userId = localStorage.getItem('userId');
+            const newName = prompt("กรุณากรอกชื่อใหม่ของคุณ:", currentName);
+
+            if (newName && newName.trim() !== "" && newName !== currentName) {
+                try {
+                    await axios.put(`http://localhost:5000/users/${userId}`, { full_name: newName });
+                    localStorage.setItem('userName', newName); 
+                    document.getElementById('topbarUserName').innerText = newName;
+                    document.getElementById('userNameDisplay').innerText = newName;
+                    alert("อัปเดตชื่อเรียบร้อยแล้วครับ! 🎉");
+                } catch (error) {
+                    alert("เกิดข้อผิดพลาด ไม่สามารถอัปเดตชื่อได้ครับ");
+                }
+            }
+        }
+
+        function selectService(id, name, price) {
+            localStorage.setItem('selectedServiceId', id);
+            localStorage.setItem('selectedServiceName', name);
+            localStorage.setItem('selectedPrice', price);
+            window.location.href = 'booking.html';
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

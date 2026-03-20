@@ -1,14 +1,382 @@
-body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f4f7f6; }
-.card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: left; }
-th { background-color: #f8f9fa; color: #555; }
+/* =========================================
+   RESET & BASE STYLES
+========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Kanit', sans-serif;
+}
 
-/* แยกสีสถานะ */
-.status-pending { background-color: #fff9db; } /* สีเหลืองอ่อน (รอ) */
-.status-confirmed { background-color: #e6fffa; } /* สีเขียวอ่อน (ยืนยัน) */
-.status-cancelled { background-color: #fff5f5; } /* สีแดงอ่อน (ยกเลิก) */
+body {
+    background-color: #f4f7f6; /* สีพื้นหลังขาวอมเทานิดๆ ให้ดูสบายตา */
+    color: #333;
+}
 
-.btn-edit { background: #6c5ce7; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
-.btn-save { background: #27ae60; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
-[contenteditable="true"] { background: white; border: 1px solid #74b9ff; padding: 4px; }
+/* =========================================
+   ANIMATIONS
+========================================= */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.main-content {
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* =========================================
+   LAYOUT : DASHBOARD & SIDEBAR
+========================================= */
+.dashboard-body {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, #0a3622 0%, #051a10 100%); /* ไล่สีเขียวเข้มไปดำ */
+    color: white;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+    z-index: 100;
+}
+
+.sidebar-header {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar-header h3 {
+    font-size: 24px;
+    letter-spacing: 2px;
+    color: #d4af37; /* สีทองพรีเมียม */
+    font-weight: 600;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.nav-item {
+    padding: 15px 25px;
+    color: #cbd5e1;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+    font-size: 15px;
+}
+
+.nav-item:hover, .nav-item.active {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border-left-color: #d4af37; /* ขีดสีทองด้านซ้ายตอนเลือก */
+}
+
+.nav-item.logout {
+    margin-top: auto;
+    color: #ff6b6b;
+}
+
+.nav-item.logout:hover {
+    background: rgba(255, 107, 107, 0.1);
+    border-left-color: #ff6b6b;
+}
+
+.main-content {
+    margin-left: 260px;
+    padding: 0 40px 40px;
+    width: calc(100% - 260px);
+}
+
+/* =========================================
+   HEADER & TYPOGRAPHY
+========================================= */
+.content-header {
+    margin: 30px 0;
+}
+
+.content-header h2 {
+    font-size: 32px;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.content-header p {
+    color: #64748b;
+    font-size: 16px;
+}
+
+/* =========================================
+   SERVICE CARDS (หน้าเลือกบริการ)
+========================================= */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.service-card-modern {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    border: 1px solid #f1f5f9;
+}
+
+.service-card-modern:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    border-color: #d4af37; /* เปลี่ยนขอบเป็นสีทองตอนโฮเวอร์ */
+}
+
+.card-image {
+    height: 220px;
+    background-position: center;
+    background-size: cover;
+    transition: transform 0.5s;
+}
+
+.service-card-modern:hover .card-image {
+    transform: scale(1.05); /* รูปซูมเข้านิดๆ */
+}
+
+.card-info {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    background: #fff;
+    position: relative;
+    z-index: 2;
+}
+
+.card-info h3 {
+    font-size: 20px;
+    color: #0f172a;
+    margin-bottom: 10px;
+}
+
+.card-info .desc {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 25px;
+    line-height: 1.6;
+    flex-grow: 1;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.price {
+    font-size: 24px;
+    font-weight: 600;
+    color: #0a3622;
+}
+
+.btn-select {
+    background: #0a3622;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.service-card-modern:hover .btn-select {
+    background: #d4af37;
+    color: #000;
+}
+
+/* =========================================
+   BOOKING & APPOINTMENT CARDS
+========================================= */
+.booking-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    max-width: 500px;
+    border: 1px solid #f1f5f9;
+}
+
+.booking-box h2 {
+    color: #0a3622;
+    margin-bottom: 20px;
+}
+
+.booking-box label {
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
+    display: block;
+    margin-top: 20px;
+}
+
+.booking-box input[type="date"],
+.booking-box input[type="time"] {
+    border: 2px solid #e2e8f0;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s;
+    width: 100%;
+    background: #f8fafc;
+}
+
+.booking-box input:focus {
+    border-color: #0a3622;
+    outline: none;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(10, 54, 34, 0.1);
+}
+
+.btn-confirm {
+    margin-top: 30px;
+    background: #d4af37;
+    color: #000;
+    font-size: 18px;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.btn-confirm:hover {
+    background: #b5952f;
+}
+
+.appointment-card {
+    background: #fff;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-left: 5px solid #0a3622;
+    transition: transform 0.2s;
+}
+
+.appointment-card:hover {
+    transform: translateX(5px);
+}
+
+/* =========================================
+   ADMIN TABLE (หน้าหลังบ้าน)
+========================================= */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    margin-top: 20px;
+}
+
+thead th {
+    background: #0a3622;
+    color: #fff;
+    padding: 18px 20px;
+    font-size: 14px;
+    letter-spacing: 1px;
+    font-weight: 400;
+}
+
+tbody td {
+    padding: 18px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ป้ายสถานะ (Badges) */
+.status-Pending {
+    background: #fef3c7;
+    color: #d97706;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-Confirmed {
+    background: #d1fae5;
+    color: #059669;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-Cancelled {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* ปุ่มในตาราง */
+.btn-action {
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: 0.2s;
+}
+
+.btn-confirm { background: #10b981; }
+.btn-confirm:hover { background: #059669; transform: translateY(-2px); }
+
+.btn-cancel { background: #ef4444; }
+.btn-cancel:hover { background: #dc2626; transform: translateY(-2px); }
+
+/* =========================================
+   SCROLLBAR สวยๆ
+========================================= */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1; 
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #0a3622; 
+}
