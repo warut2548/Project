@@ -8,11 +8,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        .appointment-card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .appointment-card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 6px solid #0b4e3d;}
         .status-Pending { color: #f39c12; font-weight: bold; }
         .status-Confirmed { color: #2ecc71; font-weight: bold; }
         .status-Cancelled { color: #e74c3c; font-weight: bold; }
-        .error-msg { color: #e74c3c; font-weight: bold; background: #fadbd8; padding: 10px; border-radius: 5px; border: 1px solid #e74c3c; }
+        .error-msg { color: #e74c3c; font-weight: bold; background: #fadbd8; padding: 15px; border-radius: 5px; border: 1px solid #e74c3c; text-align: center; }
+        .user-badge { cursor: pointer; display: flex; align-items: center; background-color: #0b4e3d; color: white; padding: 8px 20px; border-radius: 30px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s; }
+        .user-badge:hover { background-color: #083b2e; }
     </style>
 </head>
 <body class="dashboard-body">
@@ -29,7 +31,7 @@
 
     <main class="main-content">
         <div style="display: flex; justify-content: flex-end; padding: 15px 20px 0; width: 100%; box-sizing: border-box;">
-            <div onclick="editName()" style="cursor: pointer; display: flex; align-items: center; background-color: #0b4e3d; color: white; padding: 8px 20px; border-radius: 30px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s;" onmouseover="this.style.backgroundColor='#083b2e'" onmouseout="this.style.backgroundColor='#0b4e3d'">
+            <div class="user-badge" onclick="editName()">
                 <span style="margin-right: 10px; font-size: 1.2rem;">👤</span>
                 <span id="topbarUserName">กำลังโหลด...</span>
                 <span style="margin-left: 10px; font-size: 0.8rem; opacity: 0.8;">✏️ แก้ไข</span>
@@ -38,35 +40,45 @@
 
         <div style="padding: 20px;">
             <h2>📋 รายการจองคิวของคุณ</h2>
-            <div id="appointmentList"><p>กำลังโหลดข้อมูล...</p></div>
+            <div id="appointmentList">
+                <p style="text-align:center; color:#888;">กำลังโหลดข้อมูล...</p>
+            </div>
         </div>
     </main>
 
     <script>
-        // 1. เช็คสิทธิ์การเข้าถึง (ดักไว้ก่อนเลยว่าล็อกอินมาหรือยัง)
+        // 1. ตรวจสอบสิทธิ์ (ดึงค่าจาก localStorage)
         const userId = localStorage.getItem('userId');
-        if (!userId) {
-            window.location.href = 'login.html';
-        }
+        const userName = localStorage.getItem('userName') || 'ลูกค้า';
 
+        // เมื่อโหลดหน้าเว็บเสร็จ
         document.addEventListener("DOMContentLoaded", () => {
-            const userName = localStorage.getItem('userName') || 'ลูกค้า';
+            // ดักจับ ถ้ายังไม่ล็อกอิน ให้เตะกลับไปหน้า login ทันที
+            if (!userId || userId === "undefined" || userId === "null") {
+                window.location.href = 'login.html';
+                return; // หยุดการทำงาน
+            }
+
+            // ถ้ามีไอดี แสดงชื่อผู้ใช้บน Topbar
             document.getElementById('topbarUserName').innerText = userName;
             
-            // 2. ถ้ามี userId ค่อยไปดึงข้อมูล
-            if (userId) {
-                fetchAppointments();
-            }
+            // เริ่มดึงข้อมูลการจองของคนนั้น
+            fetchAppointments();
         });
 
+        // 2. ฟังก์ชันแก้ไขชื่อ
         async function editName() {
             const currentName = document.getElementById('topbarUserName').innerText;
             const newName = prompt("กรุณากรอกชื่อใหม่ของคุณ:", currentName);
+            
             if (newName && newName.trim() !== "" && newName !== currentName) {
                 try {
-                    await axios.put(`http://localhost:5000/users/${userId}`, { full_name: newName });
-                    localStorage.setItem('userName', newName); 
-                    document.getElementById('topbarUserName').innerText = newName;
+                    // ยิง API ไปอัปเดตชื่อที่ฐานข้อมูล (พอร์ต 5000)
+                    await axios.put(`http://localhost:5000/users/${userId}`, { full_name: newName.trim() });
+                    
+                    // อัปเดตข้อมูลในหน้าเว็บ
+                    localStorage.setItem('userName', newName.trim()); 
+                    document.getElementById('topbarUserName').innerText = newName.trim();
                     alert("อัปเดตชื่อเรียบร้อยแล้วครับ! 🎉");
                 } catch (error) {
                     console.error("❌ Edit Name Error:", error);
@@ -75,44 +87,54 @@
             }
         }
 
+        // 3. ฟังก์ชันดึงประวัติการจอง
         async function fetchAppointments() {
+            const listDiv = document.getElementById('appointmentList');
+            
             try {
-                // ขึ้นสถานะโหลดก่อนเผื่อเน็ตช้า
-                const listDiv = document.getElementById('appointmentList');
-                listDiv.innerHTML = '<p>กำลังโหลดข้อมูล...</p>';
-
+                // ยิง API ไปดึงข้อมูลคิวของตัวเอง
                 const res = await axios.get(`http://localhost:5000/appointments/${userId}`);
                 const appointments = res.data;
                 
+                // กรณีไม่มีประวัติการจอง
                 if (!appointments || appointments.length === 0) {
-                    listDiv.innerHTML = '<p>คุณยังไม่มีประวัติการจองคิวครับ</p>';
+                    listDiv.innerHTML = `
+                        <div style="text-align:center; padding:40px; color:#7f8c8d;">
+                            <span style="font-size: 3rem;">📅</span>
+                            <p>คุณยังไม่มีประวัติการจองคิวครับ</p>
+                        </div>`;
                     return;
                 }
 
-                listDiv.innerHTML = appointments.map(app => `
-                    <div class="appointment-card">
-                        <h3 style="margin-top:0;">บริการ: ${app.service_name || 'ไม่ระบุ (อาจถูกลบออกไปแล้ว)'}</h3>
-                        <p><strong>วันที่:</strong> ${new Date(app.appointment_date).toLocaleDateString('th-TH')}</p>
-                        <p><strong>เวลา:</strong> ${app.appointment_time}</p>
-                        <p><strong>สถานะ:</strong> <span class="status-${app.status}">${app.status}</span></p>
-                    </div>
-                `).join('');
+                // กรณีมีข้อมูล นำมาสร้างเป็น Card แสดงผล
+                listDiv.innerHTML = appointments.map(app => {
+                    const statusColor = app.status || 'Pending';
+                    return `
+                        <div class="appointment-card">
+                            <h3 style="margin-top:0; color:#0b4e3d;">✂️ บริการ: ${app.service_name || 'ไม่ระบุ'}</h3>
+                            <p><strong>📅 วันที่:</strong> ${new Date(app.appointment_date).toLocaleDateString('th-TH')}</p>
+                            <p><strong>⏰ เวลา:</strong> ${app.appointment_time} น.</p>
+                            <p><strong>📌 สถานะ:</strong> <span class="status-${statusColor}">${statusColor}</span></p>
+                        </div>
+                    `;
+                }).join('');
                 
             } catch (error) {
-                // 3. ปรับปรุงการแจ้ง Error ให้ชัดเจนขึ้น + log ลง console
+                // กรณีเชื่อมต่อ Server ไม่ได้ (Error ตัวแดง)
                 console.error("❌ Fetch Appointments Error:", error);
-                document.getElementById('appointmentList').innerHTML = `
+                listDiv.innerHTML = `
                     <div class="error-msg">
-                        เกิดข้อผิดพลาดในการโหลดข้อมูล (ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้)<br>
-                        <small>กรุณากด F12 แล้วดูที่แท็บ Console ว่าแจ้งเตือนสีแดงว่าอะไร</small>
+                        ❌ เกิดข้อผิดพลาดในการโหลดข้อมูล<br>
+                        <small>ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ (กรุณาเช็คว่า Backend พอร์ต 5000 ทำงานอยู่หรือไม่)</small>
                     </div>
                 `;
             }
         }
 
+        // 4. ฟังก์ชันออกจากระบบ
         function logout() {
-            localStorage.clear();
-            window.location.href = 'login.html';
+            localStorage.clear(); // ล้างข้อมูล
+            window.location.href = 'login.html'; // กลับไปหน้าล็อกอิน
         }
     </script>
 </body>
