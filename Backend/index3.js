@@ -57,6 +57,22 @@ app.get('/appointments/:user_id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'ดึงข้อมูลไม่สำเร็จ' }); }
 });
 
+// --- [User] สร้างการจองคิวใหม่ (Booking) ---
+app.post('/appointments', async (req, res) => {
+    const { user_id, service_id, appointment_date, appointment_time } = req.body;
+    try {
+        // กำหนดสถานะเริ่มต้นเป็น 'Pending' (รอยืนยัน)
+        await pool.query(
+            'INSERT INTO appointments (user_id, service_id, appointment_date, appointment_time, status) VALUES (?, ?, ?, ?, ?)', 
+            [user_id, service_id, appointment_date, appointment_time, 'Pending']
+        );
+        res.status(201).json({ message: 'จองคิวสำเร็จเรียบร้อย!' });
+    } catch (err) { 
+        console.error("❌ Booking Error: ", err);
+        res.status(500).json({ error: 'เกิดข้อผิดพลาดในการจองคิวที่ฐานข้อมูล' }); 
+    }
+});
+
 // --- [User] อัปเดตชื่อโปรไฟล์ ---
 app.put('/users/:id', async (req, res) => {
     const { id } = req.params;
@@ -67,7 +83,7 @@ app.put('/users/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'ล้มเหลว' }); }
 });
 
-// --- Login / Register / Booking (โค้ดเดิมของพี่) ---
+// --- Login / Register ---
 app.post('/register', async (req, res) => {
     const { email, password, full_name, phone } = req.body;
     try {
