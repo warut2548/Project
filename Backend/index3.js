@@ -4,102 +4,134 @@ const mysql = require('mysql2/promise');
 const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 5000;
-
 app.use(express.json());
 app.use(cors());
 
 const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'webdb',
+    port: process.env.DB_PORT || 3306,
     waitForConnections: true,
     connectionLimit: 10
 });
 
-// GET: ดึงข้อมูลคิว (แอดมิน)
-app.get('/appointments', async (req, res) => {
+// --- [แอดมิน] ดึงรายการจองทั้งหมด (เพิ่ม u.phone) ---
+app.get('/admin/appointments', async (req, res) => {
     try {
-        const [results] = await pool.query(`
-            SELECT a.id, c.customer_name, c.phone_number, s.service_name, 
-                   a.appointment_date, a.appointment_time, a.status 
+        const [rows] = await pool.query(`
+            SELECT 
+                a.id, 
+                COALESCE(u.full_name, 'ลูกค้าทั่วไป') AS full_name, 
+                u.phone, 
+                s.service_name, 
+                a.appointment_date, 
+                a.appointment_time, 
+                a.status
             FROM appointments a
-            JOIN customers c ON a.customer_id = c.id
-            JOIN services s ON a.service_id = s.id
-            ORDER BY a.appointment_date, a.appointment_time`);
-        res.json(results);
-    } catch (error) { res.status(500).json({ error: 'เกิดข้อผิดพลาดในการดึงข้อมูล' }); }
-});
-
-// GET: ค้นหาด้วยเบอร์โทร (สำหรับหน้า check.html)
-app.get('/appointments/search/:phone', async (req, res) => {
-    try {
-        const [results] = await pool.query(`
-            SELECT a.id, c.customer_name, c.phone_number, s.service_name, 
-                   a.appointment_date, a.appointment_time, a.status 
-            FROM appointments a
-            JOIN customers c ON a.customer_id = c.id
-            JOIN services s ON a.service_id = s.id
-            WHERE c.phone_number = ?`, [req.params.phone]);
-        res.json(results);
-    } catch (error) { res.status(500).json({ error: 'เกิดข้อผิดพลาดในการค้นหาข้อมูล' }); }
-});
-
-// POST: บันทึกการจองคิว (เพิ่มระบบกันคิวชนแล้ว!)
-app.post('/appointments', async (req, res) => {
-    const { customer_name, phone_number, service_id, appointment_date, appointment_time } = req.body;
-    try {
-        // 1. เช็คคิวชน: ดูว่ามีคิววัน/เวลานี้ที่ยังไม่ได้ยกเลิกไหม
-        const [existing] = await pool.query(`
-            SELECT id FROM appointments 
-            WHERE appointment_date = ? AND appointment_time = ? AND status != 'Cancelled'
-        `, [appointment_date, appointment_time]);
-
-        if (existing.length > 0) {
-            // คิวชน! เปลี่ยนข้อความเป็น "มีคนจองคิวแล้ว" ตามที่ต้องการ
-            return res.status(400).json({ error: 'เวลานี้มีคนจองคิวแล้วครับ รบกวนเลือกเวลาอื่นแทนนะครับ 😅' });
-        }
-
-        // 2. คิวว่าง! บันทึกข้อมูลลูกค้า
-        const [cResult] = await pool.query(
-            'INSERT INTO customers (customer_name, phone_number) VALUES (?, ?)', 
-            [customer_name, phone_number]
-        );
-        
-        // 3. บันทึกข้อมูลคิว (ตั้งค่าสถานะเริ่มต้นเป็น Pending)
-        await pool.query(
-            'INSERT INTO appointments (customer_id, service_id, appointment_date, appointment_time, status) VALUES (?, ?, ?, ?, ?)', 
-            [cResult.insertId, service_id, appointment_date, appointment_time, 'Pending']
-        );
-        
-        res.status(201).json({ message: 'จองคิวสำเร็จ! รอการยืนยันจากร้านนะครับ 🎉' });
-    } catch (e) { 
-        console.error(e);
-        res.status(500).json({ error: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่ครับ' }); 
+            LEFT JOIN users u ON a.user_id = u.id
+            LEFT JOIN services s ON a.service_id = s.id
+            ORDER BY a.appointment_date DESC, a.appointment_time DESC
+        `);
+        res.json(rows);
+    } catch (err) { 
+        console.error(err);
+        res.status(500).json({ error: 'ดึงข้อมูลไม่สำเร็จ' }); 
     }
 });
 
-// PUT: อัปเดตข้อมูลลูกค้า (ชื่อ/เบอร์)
-app.put('/appointments/:id', async (req, res) => {
-    const { customer_name, phone_number } = req.body;
+// --- [แอดมิน] อัปเดตสถานะคิว ---
+app.put('/admin/appointments/:id', async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
     try {
-        await pool.query(`
-            UPDATE customers c 
-            JOIN appointments a ON c.id = a.customer_id 
-            SET c.customer_name = ?, c.phone_number = ? 
-            WHERE a.id = ?`, [customer_name, phone_number, req.params.id]);
-        res.json({ message: 'อัปเดตข้อมูลสำเร็จ' });
-    } catch (error) { res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล' }); }
-});
-
-// PUT: อัปเดตสถานะ (สำหรับเปลี่ยนสถานะในแอดมิน)
-app.put('/appointments/:id/status', async (req, res) => {
-    try {
-        await pool.query('UPDATE appointments SET status = ? WHERE id = ?', [req.body.status, req.params.id]);
+        await pool.query('UPDATE appointments SET status = ? WHERE id = ?', [status, id]);
         res.json({ message: 'อัปเดตสถานะสำเร็จ' });
-    } catch (error) { res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอัปเดตสถานะ' }); }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'อัปเดตสถานะไม่สำเร็จ' });
+    }
 });
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+// --- [แอดมิน] อัปเดตชื่อและเบอร์โทรลูกค้า (Inline Edit) ---
+app.put('/admin/update-user/:id', async (req, res) => {
+    const { id } = req.params; // appointment id
+    const { full_name, phone } = req.body;
+    try {
+        const [appRow] = await pool.query('SELECT user_id FROM appointments WHERE id = ?', [id]);
+        if (appRow.length > 0 && appRow[0].user_id) {
+            await pool.query('UPDATE users SET full_name = ?, phone = ? WHERE id = ?', 
+            [full_name, phone, appRow[0].user_id]);
+            res.json({ message: 'อัปเดตข้อมูลลูกค้าสำเร็จ' });
+        } else {
+            res.status(400).json({ error: 'ไม่พบข้อมูลผู้ใช้' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'บันทึกไม่สำเร็จ' });
+    }
+});
+
+// --- โค้ดสำหรับ Login / Register ---
+app.post('/register', async (req, res) => {
+    const { email, password, full_name, phone } = req.body;
+    try {
+        await pool.query('INSERT INTO users (email, password, full_name, phone) VALUES (?, ?, ?, ?)', [email, password, full_name, phone]);
+        res.status(201).json({ message: 'สำเร็จ' });
+    } catch (err) { 
+        console.error(err);
+        res.status(500).json({ error: 'ล้มเหลว' }); 
+    }
+});
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const [users] = await pool.query('SELECT id, full_name FROM users WHERE email = ? AND password = ?', [email, password]);
+        if (users.length > 0) res.json({ user: users[0] });
+        else res.status(401).json({ error: 'ผิดพลาด' });
+    } catch (err) { 
+        console.error(err);
+        res.status(500).json({ error: 'ขัดข้อง' }); 
+    }
+});
+
+// --- [ลูกค้า] สร้างการจองคิว ---
+app.post('/appointments', async (req, res) => {
+    const { user_id, service_id, appointment_date, appointment_time } = req.body;
+    try {
+        await pool.query('INSERT INTO appointments (user_id, service_id, appointment_date, appointment_time) VALUES (?, ?, ?, ?)', [user_id, service_id, appointment_date, appointment_time]);
+        res.status(201).json({ message: 'จองสำเร็จ' });
+    } catch (err) { 
+        console.error(err);
+        res.status(500).json({ error: 'ล้มเหลว' }); 
+    }
+});
+
+// --- ✨ [เพิ่มใหม่] [ลูกค้า] ดึงรายการจองของตัวเอง (ใช้ในหน้า check.html) ✨ ---
+app.get('/appointments/:user_id', async (req, res) => {
+    const { user_id } = req.params;
+    try {
+        const [rows] = await pool.query(`
+            SELECT 
+                a.id, 
+                s.service_name, 
+                a.appointment_date, 
+                a.appointment_time, 
+                a.status
+            FROM appointments a
+            LEFT JOIN services s ON a.service_id = s.id
+            WHERE a.user_id = ?
+            ORDER BY a.appointment_date DESC, a.appointment_time DESC
+        `, [user_id]);
+        
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'ดึงข้อมูลการจองไม่สำเร็จ' });
+    }
+});
+
+const port = process.env.PORT || 5000;
+app.listen(port, () => console.log(`🚀 Server running on http://localhost:${port}`));
