@@ -45,8 +45,10 @@
         });
 
         async function confirmBooking() {
+            // 1.เอา localStorage   ID ลูกค้า และ ID บริการ ออกมา
             const userId = localStorage.getItem('userId');
             const serviceId = localStorage.getItem('selectedServiceId');
+            // 2.ดึงค่า วันที่ และ เวลา ที่ลูกค้าเพิ่งพิมพ์ในหน้าจอ
             const date = document.getElementById('bookDate').value;
             const time = document.getElementById('bookTime').value;
 
@@ -56,6 +58,7 @@
             }
 
             try {
+                // 3.แพ็คข้อมูลทั้ง 4 อย่าง ยิง API ไปบันทึกลง Database
                 await axios.post('http://localhost:5000/appointments', {
                     user_id: userId,
                     service_id: serviceId,
@@ -63,7 +66,7 @@
                     appointment_time: time
                 });
                 alert('จองคิวสำเร็จแล้วครับ! 🎉');
-                window.location.href = 'check.html';
+                window.location.href = 'check.html'; // จองเสร็จไปหน้าเช็คคิว
             } catch (error) {
                 alert(error.response?.data?.error || 'เกิดข้อผิดพลาดในการจองคิว');
             }

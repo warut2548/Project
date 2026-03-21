@@ -14,7 +14,7 @@
             align-items: center; 
             height: 100vh; 
             margin: 0; 
-            /* 🌟 เพิ่มรูปพื้นหลังสุดเท่ตรงนี้ */
+            /* รูปพื้นหลัง */
             background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1920');
             background-size: cover;
             background-position: center;
@@ -29,7 +29,7 @@
             max-width: 400px; 
             text-align: center; 
         }
-        /* 🌟 โค้ดสำหรับรูปโลโก้กลมๆ */
+        /* โค้ดสำหรับรูปโลโก้ */
         .login-logo {
             width: 100px;
             height: 100px;
@@ -102,6 +102,7 @@
         localStorage.clear();
 
         async function login() {
+            // 1.รับค่าที่ลูกค้าพิมพ์ในช่องอีเมลและรหัสผ่าน
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
@@ -111,17 +112,18 @@
             }
 
             try {
-                // ส่งข้อมูลไปตรวจสอบที่ Backend
+                // 2.ส่งข้อมูลไปถามหลังบ้าน (Backend) ผ่าน API Login
                 const res = await axios.post('http://localhost:5000/login', { email, password });
                 alert('เข้าสู่ระบบสำเร็จ! 🎉');
                 
-                // บันทึกข้อมูลลูกค้าลงในระบบ
+                // 3.ถ้ารหัสถูก จะเอา ID ลูกค้าใส่กระเป๋า (localStorage) ไว้
                 localStorage.setItem('userId', res.data.user.id);
                 localStorage.setItem('userName', res.data.user.full_name);
                 
-                // ล็อกอินผ่านแล้วเด้งไปหน้าเลือกบริการ
+                // 4.ส่งลูกค้าไปหน้าเลือกบริการ
                 window.location.href = 'services.html';
             } catch (err) {
+                // ถ้ารหัสผิด จะเด้งแจ้งเตือน
                 alert('อีเมลหรือรหัสผ่านผิดครับ! โปรดลองใหม่อีกครั้ง');
             }
         }

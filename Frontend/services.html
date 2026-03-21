@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body class="dashboard-body">
+    
     <div class="sidebar">
         <div class="sidebar-header">
             <h3>BARBER SHOP</h3>
@@ -21,6 +22,7 @@
     </div>
 
     <main class="main-content">
+        
         <div style="display: flex; justify-content: flex-end; padding: 15px 20px 0; width: 100%; box-sizing: border-box;">
             <div onclick="editName()" style="cursor: pointer; display: flex; align-items: center; background-color: #0b4e3d; color: white; padding: 8px 20px; border-radius: 30px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s;" onmouseover="this.style.backgroundColor='#083b2e'" onmouseout="this.style.backgroundColor='#0b4e3d'">
                 <span style="margin-right: 10px; font-size: 1.2rem;">👤</span>
@@ -37,6 +39,7 @@
         </header>
 
         <div class="services-grid">
+            
             <div class="service-card-modern" onclick="selectService(1, 'ตัดผมชาย (Modern Haircut)', 300)">
                 <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=500');"></div>
                 <div class="card-info">
@@ -76,29 +79,44 @@
     </main>
 
     <script>
+        // 1. ทำงานอัตโนมัติเมื่อโหลดหน้าเว็บเสร็จ
         window.onload = () => {
+            // ดึงชื่อและ ID ลูกค้าจากกระเป๋า localStorage
             const userName = localStorage.getItem('userName') || 'ลูกค้า';
             const userId = localStorage.getItem('userId');
             
+            // ระบบป้องกัน: ถ้าไม่มี ID (แปลว่ายังไม่ล็อกอิน) ให้เตะกลับไปหน้า Login
             if (!userId) {
                 window.location.href = 'login.html'; 
                 return;
             }
+            // ถ้าล็อกอินแล้ว เอาชื่อมาแสดงบนหน้าเว็บ (ตรงข้อความต้อนรับ และแถบบนขวา)
             document.getElementById('userNameDisplay').innerText = userName;
             document.getElementById('topbarUserName').innerText = userName;
         };
 
+        // 2. ฟังก์ชันสำหรับแก้ไขชื่อผู้ใช้
         async function editName() {
+            // ดึงชื่อปัจจุบัน และ ID มาเตรียมไว้
             const currentName = document.getElementById('topbarUserName').innerText;
             const userId = localStorage.getItem('userId');
+            
+            // แสดงกล่องเด้ง (Prompt) ให้ลูกค้าพิมพ์ชื่อใหม่
             const newName = prompt("กรุณากรอกชื่อใหม่ของคุณ:", currentName);
 
+            // เช็คว่าลูกค้าพิมพ์ชื่อใหม่มาจริงๆ ไม่ได้ปล่อยว่าง และไม่ซ้ำกับชื่อเดิม
             if (newName && newName.trim() !== "" && newName !== currentName) {
                 try {
+                    // ยิง API แบบ PUT ไปที่หลังบ้าน เพื่อสั่งอัปเดตชื่อในฐานข้อมูล MySQL
                     await axios.put(`http://localhost:5000/users/${userId}`, { full_name: newName });
+                    
+                    // เมื่อหลังบ้านอัปเดตสำเร็จ ก็มาอัปเดตชื่อใน localStorage ด้วย
                     localStorage.setItem('userName', newName); 
+                    
+                    // อัปเดตข้อความบนหน้าเว็บให้เปลี่ยนเป็นชื่อใหม่ทันที โดยไม่ต้องรีเฟรชหน้า
                     document.getElementById('topbarUserName').innerText = newName;
                     document.getElementById('userNameDisplay').innerText = newName;
+                    
                     alert("อัปเดตชื่อเรียบร้อยแล้วครับ! 🎉");
                 } catch (error) {
                     alert("เกิดข้อผิดพลาด ไม่สามารถอัปเดตชื่อได้ครับ");
@@ -106,15 +124,22 @@
             }
         }
 
+        // 3. ฟังก์ชันสำหรับเลือกบริการ
         function selectService(id, name, price) {
+            // ฝากข้อมูล รหัสบริการ, ชื่อบริการ, และราคา ไว้ใน localStorage
             localStorage.setItem('selectedServiceId', id);
             localStorage.setItem('selectedServiceName', name);
             localStorage.setItem('selectedPrice', price);
+            
+            // ย้ายลูกค้าไปที่หน้าเลือกวัน-เวลา (booking.html)
             window.location.href = 'booking.html';
         }
 
+        // 4. ฟังก์ชันออกจากระบบ
         function logout() {
+            // ล้างข้อมูลทุกอย่างใน localStorage (ทำให้ระบบลืมว่าใครล็อกอินอยู่)
             localStorage.clear();
+            // เด้งกลับไปหน้าเข้าสู่ระบบ
             window.location.href = 'login.html';
         }
     </script>
