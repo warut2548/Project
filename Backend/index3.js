@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- ตั้งค่าการเชื่อมต่อฐานข้อมูล ---
+// ตั้งค่าการเชื่อมต่อฐานข้อมูล
 const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
@@ -18,7 +18,7 @@ const pool = mysql.createPool({
     connectionLimit: 10
 });
 
-// --- [แอดมิน] ดึงรายการจองทั้งหมด ---
+// [แอดมิน] ดึงรายการจองทั้งหมด 
 app.get('/admin/appointments', async (req, res) => {
     try {
         const [rows] = await pool.query(`
@@ -33,7 +33,7 @@ app.get('/admin/appointments', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'ดึงข้อมูลไม่สำเร็จ' }); }
 });
 
-// --- [แอดมิน] อัปเดตสถานะ ---
+// [แอดมิน] อัปเดตสถานะ
 app.put('/admin/appointments/:id', async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
@@ -43,7 +43,7 @@ app.put('/admin/appointments/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'ล้มเหลว' }); }
 });
 
-// --- [User] ดึงรายการจองเฉพาะของตัวเอง ---
+// [User] ดึงรายการจองเฉพาะของตัวเอง
 app.get('/appointments/:user_id', async (req, res) => {
     const { user_id } = req.params;
     try {
@@ -58,7 +58,7 @@ app.get('/appointments/:user_id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'ดึงข้อมูลไม่สำเร็จ' }); }
 });
 
-// --- [User] สร้างการจองคิวใหม่ (Booking) ---
+// [User] สร้างการจองคิวใหม่ (Booking)
 app.post('/appointments', async (req, res) => {
     const { user_id, service_id, appointment_date, appointment_time } = req.body;
     try {
@@ -74,7 +74,7 @@ app.post('/appointments', async (req, res) => {
     }
 });
 
-// --- ✨ [User] ยกเลิกคิวของตัวเอง ✨ ---
+// ✨ [User] ยกเลิกคิวของตัวเอง ✨
 app.put('/appointments/:id/cancel', async (req, res) => {
     const { id } = req.params;
     try {
@@ -86,7 +86,7 @@ app.put('/appointments/:id/cancel', async (req, res) => {
     }
 });
 
-// --- ✨ [User] เลื่อนคิว (แก้ไขวันและเวลา) ✨ ---
+// [User] เลื่อนคิว (แก้ไขวันและเวลา)
 app.put('/appointments/:id/reschedule', async (req, res) => {
     const { id } = req.params;
     const { appointment_date, appointment_time } = req.body;
@@ -102,7 +102,7 @@ app.put('/appointments/:id/reschedule', async (req, res) => {
     }
 });
 
-// --- [User] อัปเดตชื่อโปรไฟล์ ---
+// [User] อัปเดตชื่อโปรไฟล์
 app.put('/users/:id', async (req, res) => {
     const { id } = req.params;
     const { full_name } = req.body;
@@ -112,7 +112,7 @@ app.put('/users/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'ล้มเหลว' }); }
 });
 
-// --- Login / Register ---
+// Login / Register
 app.post('/register', async (req, res) => {
     const { email, password, full_name, phone } = req.body;
     try {
@@ -130,6 +130,6 @@ app.post('/login', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'ขัดข้อง' }); }
 });
 
-// --- เริ่มการทำงานของ Server ---
+// เริ่มการทำงานของ Server
 const port = 5000;
 app.listen(port, () => console.log(`🚀 Server running on http://localhost:${port}`));
