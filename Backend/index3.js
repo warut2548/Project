@@ -30,7 +30,10 @@ app.get('/admin/appointments', async (req, res) => {
             ORDER BY a.appointment_date DESC, a.appointment_time DESC
         `);
         res.json(rows);
-    } catch (err) { res.status(500).json({ error: 'ดึงข้อมูลไม่สำเร็จ' }); }
+    } catch (err) { 
+        console.error("❌ Get Admin Appointments Error:", err);
+        res.status(500).json({ error: 'ดึงข้อมูลไม่สำเร็จ' }); 
+    }
 });
 
 // [แอดมิน] อัปเดตสถานะ
@@ -40,7 +43,10 @@ app.put('/admin/appointments/:id', async (req, res) => {
     try {
         await pool.query('UPDATE appointments SET status = ? WHERE id = ?', [status, id]);
         res.json({ message: 'สำเร็จ' });
-    } catch (err) { res.status(500).json({ error: 'ล้มเหลว' }); }
+    } catch (err) { 
+        console.error("❌ Update Status Error:", err);
+        res.status(500).json({ error: 'ล้มเหลว' }); 
+    }
 });
 
 // [User] ดึงรายการจองเฉพาะของตัวเอง
@@ -55,7 +61,10 @@ app.get('/appointments/:user_id', async (req, res) => {
             ORDER BY a.appointment_date DESC, a.appointment_time DESC
         `, [user_id]);
         res.json(rows);
-    } catch (err) { res.status(500).json({ error: 'ดึงข้อมูลไม่สำเร็จ' }); }
+    } catch (err) { 
+        console.error("❌ Get User Appointments Error:", err);
+        res.status(500).json({ error: 'ดึงข้อมูลไม่สำเร็จ' }); 
+    }
 });
 
 // [User] สร้างการจองคิวใหม่ (Booking)
@@ -69,12 +78,12 @@ app.post('/appointments', async (req, res) => {
         );
         res.status(201).json({ message: 'จองคิวสำเร็จเรียบร้อย!' });
     } catch (err) { 
-        console.error("❌ Booking Error: ", err);
+        console.error("❌ Booking Error:", err);
         res.status(500).json({ error: 'เกิดข้อผิดพลาดในการจองคิวที่ฐานข้อมูล' }); 
     }
 });
 
-// ✨ [User] ยกเลิกคิวของตัวเอง ✨
+// [User] ยกเลิกคิวของตัวเอง
 app.put('/appointments/:id/cancel', async (req, res) => {
     const { id } = req.params;
     try {
@@ -109,7 +118,10 @@ app.put('/users/:id', async (req, res) => {
     try {
         await pool.query('UPDATE users SET full_name = ? WHERE id = ?', [full_name, id]);
         res.json({ message: 'สำเร็จ' });
-    } catch (err) { res.status(500).json({ error: 'ล้มเหลว' }); }
+    } catch (err) { 
+        console.error("❌ Update Profile Error:", err);
+        res.status(500).json({ error: 'ล้มเหลว' }); 
+    }
 });
 
 // Login / Register
@@ -118,7 +130,10 @@ app.post('/register', async (req, res) => {
     try {
         await pool.query('INSERT INTO users (email, password, full_name, phone) VALUES (?, ?, ?, ?)', [email, password, full_name, phone]);
         res.status(201).json({ message: 'สำเร็จ' });
-    } catch (err) { res.status(500).json({ error: 'ล้มเหลว' }); }
+    } catch (err) { 
+        console.error("❌ Register Error:", err);
+        res.status(500).json({ error: 'ล้มเหลว' }); 
+    }
 });
 
 app.post('/login', async (req, res) => {
@@ -127,7 +142,10 @@ app.post('/login', async (req, res) => {
         const [users] = await pool.query('SELECT id, full_name FROM users WHERE email = ? AND password = ?', [email, password]);
         if (users.length > 0) res.json({ user: users[0] });
         else res.status(401).json({ error: 'ผิดพลาด' });
-    } catch (err) { res.status(500).json({ error: 'ขัดข้อง' }); }
+    } catch (err) { 
+        console.error("❌ Login Error:", err);
+        res.status(500).json({ error: 'ขัดข้อง' }); 
+    }
 });
 
 // เริ่มการทำงานของ Server
