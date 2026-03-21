@@ -265,6 +265,14 @@
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const passwordValue = document.getElementById('password').value;
+
+            // ✨ เช็คความยาวรหัสผ่านก่อนส่งข้อมูล
+            if (passwordValue.length < 6) {
+                alert('❌ กรุณาตั้งรหัสผ่านอย่างน้อย 6 ตัวอักษรครับ');
+                return;
+            }
+
             // แสดงสถานะการทำงาน
             regBtn.innerText = 'กำลังบันทึกข้อมูล...';
             regBtn.disabled = true;
@@ -273,22 +281,23 @@
                 full_name: document.getElementById('full_name').value,
                 email: document.getElementById('email').value,
                 phone: document.getElementById('phone').value,
-                password: document.getElementById('password').value
+                password: passwordValue
             };
 
             try {
                 // ยิงไปที่ API Register 
                 const response = await axios.post('http://localhost:5000/register', userData);
 
-                // ถ้าสำเร็จ
+                // ถ้าสำเร็จ (และใช้ข้อความจาก Backend)
                 alert(response.data.message || '🎉 สมัครสมาชิกสำเร็จ!');
                 window.location.href = 'login.html';
 
             } catch (error) {
-                // ถ้าผิดพลาด (เช่น อีเมลซ้ำ)
-                const errorMsg = error.response ? error.response.data.error : 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
+                // ถ้าผิดพลาด (เช่น อีเมลซ้ำ ระบบจะดึงข้อความจาก Backend มาแสดง)
+                const errorMsg = error.response?.data?.error || 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ หรือมีข้อผิดพลาดบางอย่าง';
                 alert('❌ ' + errorMsg);
                 
+                // คืนค่าปุ่มให้กดใหม่ได้
                 regBtn.innerText = 'สมัครสมาชิก';
                 regBtn.disabled = false;
             }
